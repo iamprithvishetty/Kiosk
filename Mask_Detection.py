@@ -9,6 +9,7 @@ import importlib.util
 from threading import Thread
 from smbus2 import SMBus
 from mlx90614 import MLX90614
+import pigpio
 
 mask_count = 0
 no_mask_count = 0
@@ -18,13 +19,11 @@ bus = SMBus(1)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-motorA = 15
-motorB = 18
-GPIO.setup(motorA,GPIO.OUT)
-GPIO.setup(motorB,GPIO.OUT)
 
-GPIO.output(motorA,False)
-GPIO.output(motorB,False)
+servo = 23
+pwm = pigpio.pi() 
+pwm.set_mode(servo, pigpio.OUTPUT)
+pwm.set_PWM_frequency( servo, 50 )
 
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
@@ -76,6 +75,18 @@ def Temp_Check():
     Temp_value = thermometer.get_object_1()
     bus.close()
     return Temp_value
+
+def angle_to_percent(angle) :
+    if angle > 180 or angle < 0 :
+        return False
+
+    start = 4.5
+    end = 12
+    ratio = (end - start)/180 #Calcul ratio from angle to percent
+
+    angle_as_percent = angle * ratio
+
+    return start + angle_as_percent
 
 def Mask_Check():
     global object_name,mask_count,no_mask_count
@@ -235,7 +246,7 @@ def Mask_Check():
         cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
+        #cv2.imshow('Object detector', frame)
 
         # Calculate framerate
         t2 = cv2.getTickCount()
@@ -289,20 +300,25 @@ while True:
                 if Temp_New> Temperature:
                     Temperature= Temp_New
                            
-            if Temperature <32.0:
+            if Temperature <34.0:
                 flag_temp = 1
                 print("Your temperature is normal")
             else:
                 flag_temp = 0
                 print("Your temperature is higher than normal")
             if flag_temp == 1:
-                GPIO.output(motorA,True)
-                time.sleep(0.5)
-                GPIO.output(motorA,False)
-                time.sleep(5)
-                GPIO.output(motorB,True)
-                time.sleep(0.5)
-                GPIO.output(motorB,False)
+                print( "0 deg" )
+                pwm.set_servo_pulsewidth( servo, 500 ) 
+                time.sleep(1)
+                 
+                print( "180 deg" )
+                pwm.set_servo_pulsewidth( servo, 2500 ) 
+                time.sleep(1)
+                
+                print( "0 deg" )
+                pwm.set_servo_pulsewidth( servo, 500 ) 
+                time.sleep(1)
+                
         mask_count=0
         no_mask_count = 0
         print("Thank You")
