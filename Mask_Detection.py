@@ -268,9 +268,10 @@ while True:
     if mask_count>2 or no_mask_count>2:
         if object_name == "no mask":
             print("Please wear your mask")
-            
+            os.system('pico2wave -w voice.wav "'+'Please wear your mask'+'" && aplay voice.wav')
         elif object_name == "mask":
             print("Thank you for wearing Mask")
+	    os.system('pico2wave -w voice.wav "'+'Thank you for wearing Mask'+'" && aplay voice.wav')
         time.sleep(5)
         time_start = time.time()
         time_up = 0
@@ -279,13 +280,16 @@ while True:
             print("Please wait and stay still")
         if time_up > 20:
             print("Mask not detected")
+	    os.system('pico2wave -w voice.wav "'+'Mask not detected'+'" && aplay voice.wav')
             flag_mask = 0
         elif mask_count>=5:
             print("Mask detected")
+	    os.system('pico2wave -w voice.wav "'+'Mask detected'+'" && aplay voice.wav')
             flag_mask = 1
         time.sleep(3)
         if flag_mask == 1:
             print("Kindly Check your temperature")
+	    os.system('pico2wave -w voice.wav "'+'Kindly Check your temperature'+'" && aplay voice.wav')
             Temperature = Temp_Check()
             time_start = time.time()
             time_up = 0
@@ -303,9 +307,11 @@ while True:
             if Temperature <34.0:
                 flag_temp = 1
                 print("Your temperature is normal")
+		os.system('pico2wave -w voice.wav "'+'Your temperature is normal'+'" && aplay voice.wav')
             else:
                 flag_temp = 0
                 print("Your temperature is higher than normal")
+		os.system('pico2wave -w voice.wav "'+'Your temperature is higher than normal'+'" && aplay voice.wav')
             if flag_temp == 1:
                 print( "0 deg" )
                 pwm.set_servo_pulsewidth( servo, 500 ) 
@@ -322,4 +328,5 @@ while True:
         mask_count=0
         no_mask_count = 0
         print("Thank You")
+	os.system('pico2wave -w voice.wav "'+'Thank You'+'" && aplay voice.wav')
         time.sleep(3)
