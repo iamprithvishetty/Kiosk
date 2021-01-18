@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset = "UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+      <title>FOSTER</title>
+	  <style>
+	  body {
+	  background-image: url('/static/background.jpg');
+	  background-repeat: no-repeat;
+	  background-attachment: fixed;
+	  background-size: 100% 100%;
+			}
+
+	  #title_name{
+	  margin-left: 30%;
+	  margin-right:30%;
+	  margin-top: 3%;
+	  text-align:center;
+	  background-color: #ffffff;
+	  opacity: 0.15;
+	  border-style: solid;
+      border-color:white;
+	  border-radius:10px;
+	  font-size:90px;
+	  font-family:serif;
+	  animation-name: title_up;
+	  animation-duration: 3s;
+	  }
+
+	  #title_name_2{
+	  }
+
+	  #demo{
+	  font-family:consolas;
+	  font-size:65px;
+	  font-stretch:semi-expanded;
+	  color:#ffffff;
+	  text-align:center;
+	  }
+
+
+	  @keyframes title_up
+	  {
+	    0%   {margin-top: 30%;}
+		70%  {margin-top: 1%;}
+		100% {margin-top: 3%;}
+		}
+
+	  </style>
+       <script src="/static/jquery.js"></script>
+   </head>
+
+   <body>
+     <div id="title_name_2">
+      <div id="title_name">F O S T E R</div>
+	 </div>
+	<div id="demo"></div>
+     <div  id="videoshow">
+   <img src="{{ url_for('video_feed') }}" width="500" height="400" style="border:5px solid white;display: block;margin-left:auto;margin-right:auto;">
+   </div>
+   </body>
+   <script>
+var i = 0;
+var speed = 75;
+var data_pre = 'Kindly Check your temperature';
+var data_1 = "";
+setTimeout(typeWriter,4000);
+setTimeout(requestData,8000);
+document.getElementById("demo").style.margin="5%";
+
+function typeWriter() {
+  if (i < data_pre.length) {
+      if(i==0)
+      {
+          document.getElementById("demo").innerHTML ="";
+      }
+    document.getElementById("demo").innerHTML += data_pre.charAt(i);
+    i++;
+    setTimeout(typeWriter, speed);
+  }
+}
+ function requestData()
+        {
+            // Ajax call to get the Data from Flask
+            var requests = $.get('/data');
+             var check = requests.done(function (result)
+            {
+                data_1 = String(result);
+            });
+            i=0;
+            console.log(data_1)
+            if( data_pre !== data_1)
+            {
+            data_pre = data_1;
+            console.log(typeof(data_pre));
+            typeWriter();
+            }
+            setTimeout(requestData, 200);
+        }
+
+   </script>
+</html>
+
