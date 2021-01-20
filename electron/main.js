@@ -13,7 +13,7 @@ function createWindow () {
     }
   })
   // and load the index.html of the app.
-  //mainWindow.loadFile("http://127.0.0.1:5000")
+  //mainWindow.loadFile("index.html")
  mainWindow.loadURL('http://localhost:5000');
  mainWindow.maximize();
   // Open the DevTools.
