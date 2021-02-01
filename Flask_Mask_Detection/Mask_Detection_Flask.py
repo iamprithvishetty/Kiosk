@@ -25,6 +25,9 @@ bus = SMBus(1)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+hand_check = 17
+GPIO.setup(hand_check, GPIO.IN, GPIO.PUD_DOWN)
+
 servo = 23
 pwm = pigpio.pi() 
 pwm.set_mode(servo, pigpio.OUTPUT)
@@ -284,6 +287,30 @@ def Mask_Check():
     # Clean up
     cv2.destroyAllWindows()
     videostream.stop()
+ 
+def Sanitizer():
+    while True:
+        flag = 0 
+        if GPIO.input(hand_check) == True:
+            time_now= time.time()
+            while GPIO.input(hand_check) == True:
+                if time.time() - time_now > 3:
+                    flag=1
+                    break
+                continue
+            if flag == 1:
+                flag=0
+                print( "0 deg" )
+                pwm.set_servo_pulsewidth( servo, 500 ) 
+                time.sleep(1)
+                 
+                print( "180 deg" )
+                pwm.set_servo_pulsewidth( servo, 2500 ) 
+                time.sleep(1)
+                
+                print( "0 deg" )
+                pwm.set_servo_pulsewidth( servo, 500 ) 
+                time.sleep(1)
     
 def Mask_Main():
     global flask_value,mask_count,no_mask_count,object_name
@@ -299,10 +326,11 @@ def Mask_Main():
             time.sleep(5)
             time_start = time.time()
             time_up = 0
+            print("Please wait and stay still")
+            flask_value="Please wait and stay still"
             while(mask_count<5 and time_up <20):
                 time_up =time.time()-time_start
-                print("Please wait and stay still")
-                flask_value="Please wait and stay still"
+                
             if time_up > 20:
                 print("Mask not detected")
                 flask_value = "Mask not detected"
@@ -337,22 +365,13 @@ def Mask_Main():
                     time.sleep(3)
                 else:
                     flag_temp = 0
-                    print("Your temperature is higher than normal")
-                    flask_value = "Your temperature is higher than normal"
+                    print("Your temperature is high")
+                    flask_value = "Your temperature is high"
                     time.sleep(3)
                     
-                if flag_temp == 1:
-                    print( "0 deg" )
-                    pwm.set_servo_pulsewidth( servo, 500 ) 
-                    time.sleep(1)
-                     
-                    print( "180 deg" )
-                    pwm.set_servo_pulsewidth( servo, 2500 ) 
-                    time.sleep(1)
-                    
-                    print( "0 deg" )
-                    pwm.set_servo_pulsewidth( servo, 500 ) 
-                    time.sleep(1)
+                print("Kindly Santize your hand")
+                flask_value = "Kindly Santize your hand"
+                time.sleep(6)
                     
             mask_count=0
             no_mask_count = 0
@@ -360,10 +379,14 @@ def Mask_Main():
             flask_value = "Thank You"
             time.sleep(3)
 
-#Thread_Mask = Thread(target = Mask_Check, args = ())
+Thread_Mask = Thread(target = Mask_Check, args = ())
 Thread_Main_Mask = Thread(target = Mask_Main, args = ())
+Thread_Sanitizer =  Thread(target= Sanitizer, args = ())
             
 if __name__ == "__main__":
+    Thread_Mask.start()
     Thread_Main_Mask.start()
+    Thread_Sanitizer.start()
     app.run(debug=True)
     
+
